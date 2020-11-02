@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-deployment
+  labels:
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: php
+        tier: backend
+    spec:
+      containers:
+        - name: php
+          image: sandbox/php-fpm:latest
+          imagePullPolicy: Never
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: code
+              mountPath: /usr/src/app
+      initContainers:
+        - name: install
+          image: sandbox/php-fpm:latest
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: code
+              mountPath: /usr/src/app
+          command: ["sh", "/usr/src/init.sh"]
+      volumes:
+        - name: code
+          persistentVolumeClaim:
+            claimName: code
